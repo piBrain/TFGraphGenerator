@@ -1,0 +1,7 @@
+setup.cfg
+setup.py
+tfgraphgen.egg-info/PKG-INFO
+tfgraphgen.egg-info/SOURCES.txt
+tfgraphgen.egg-info/dependency_links.txt
+tfgraphgen.egg-info/requires.txt
+tfgraphgen.egg-info/top_level.txt

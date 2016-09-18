@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: tfgraphgen
+Version: 0.5.0
+Summary: Symbolic Graph Generation Tensorflow Helper Library
+Home-page: http://pibrain.io
+Author: Ian T Butler
+Author-email: UNKNOWN
+License: MIT
+Description: UNKNOWN
+Keywords: symbolic graph tensorflow
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: piBrain Engineers
+Classifier: Topic :: Software Development :: Helper Library
+Classifier: License :: MIT License
+Classifier: Programming Language :: Python :: 3.5
