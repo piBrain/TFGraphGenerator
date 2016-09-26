@@ -1,3 +1,7 @@
+import tensorflow as tf
+from collections import OrderedDict
+import math
+
 class nn_graph_gen():
 
     __implemented_activations = {}
@@ -33,7 +37,6 @@ class nn_graph_gen():
 
     def _graphcontext(f):
         def wrap(self,*args,**kwargs):
-            print(self.tf_graph == graph)
             with self.tf_graph.as_default():
                 f(self,*args,**kwargs)
         return wrap
@@ -88,29 +91,29 @@ class nn_graph_gen():
     __implemented_activations['tanh_layer'] = _tanh
     @staticmethod
     def _elu(inputs, weights, biases):
-        return ('elu',tf.nn.elu(tf.matmul(inputs,weights)+biases)
+        return ('elu',tf.nn.elu(tf.matmul(inputs,weights)+biases))
     __implemented_activations['elu_layer'] = _elu
 
     @staticmethod
-    def _log_sigmoid(inputs, wights, biases):
-        return ('log_sigmoid', tf.nn.sigmoid(tf.matmul(inputs,weight)+biases))
-    __implemented_Activations['sigmoid_layer'] = _log_sigmoid
+    def _log_sigmoid(inputs, weights, biases):
+        return ('log_sigmoid', tf.nn.sigmoid(tf.matmul(inputs,weights)+biases))
+    __implemented_activations['sigmoid_layer'] = _log_sigmoid
     @staticmethod
     def _softsign(inputs,weights,biases):
-        return ('softsign',tf.nn.softsign(tf.matmul(inputs,weights,biases)))
-     __implemented_Activations['softsign_layer'] = _softsign
+        return ('softsign',tf.nn.softsign(tf.matmul(inputs,weights)+biases))
+    __implemented_activations['softsign_layer'] = _softsign
     @staticmethod
-    def _dropout(inputs,weights,biases,keep,noise_shape=none):
+    def _dropout(inputs,weights,biases,keep,noise_shape=None):
         return ('dropout',tf.nn.dropout(tf.matmul(inputs,weights,biases),keep,noise_shape))
-      __implemented_Activations['dropout_layer'] = _dropout
+    __implemented_activations['dropout_layer'] = _dropout
     @staticmethod
     def _relu6(inputs,weights,biases):
         return ('relu6',tf.nn.relu6(tf.matmul(inputs,weights,biases)))
-       __implemented_Activations['relu6_layer'] = _relu6
+    __implemented_activations['relu6_layer'] = _relu6
     @staticmethod
     def _softplus(inputs,weights,biases):
         return ('softplus',tf.nn.softplus(tf.matmul(inputs,weights,biases)))
-        __implemented_Activations['softplus_layer'] = _softplus
+    __implemented_activations['softplus_layer'] = _softplus
 
 
 
