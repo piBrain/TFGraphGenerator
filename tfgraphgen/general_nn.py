@@ -2,7 +2,7 @@ import tensorflow as tf
 from collections import OrderedDict
 import math
 
-class nn_graph_gen():
+class GeneralNetworks():
 
     __implemented_activations = {}
 
