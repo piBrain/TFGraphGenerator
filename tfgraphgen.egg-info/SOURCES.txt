@@ -1,5 +1,8 @@
 setup.cfg
 setup.py
+tfgraphgen/__init__.py
+tfgraphgen/general_nn.py
+tfgraphgen/rnn.py
 tfgraphgen.egg-info/PKG-INFO
 tfgraphgen.egg-info/SOURCES.txt
 tfgraphgen.egg-info/dependency_links.txt
