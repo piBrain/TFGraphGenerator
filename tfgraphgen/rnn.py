@@ -76,8 +76,13 @@ class RecurrentNetworks(GeneralNetworks):
     @staticmethod
     def _multi_cell(cells, state_is_tuple=False):
         return ('multi_cell',tf.nn.rnn_cell.MultiRNNCell(cells,state_is_tuple))
-
+    
+    
     GeneralNetworks._implemented['RecurrentNetworks']['multi_cell'] = _multi_cell
+    
+    @GeneralNetworks._graphcontext
+    def unroll_rnn():
+        tf.while()
 
 
 
