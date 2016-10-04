@@ -1,9 +1,22 @@
+from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import dtypes
+from tensorflow.python.framework import ops
+from tensorflow.python.framework import tensor_shape
+from tensorflow.python.ops import array_ops
+from tensorflow.python.ops import control_flow_ops
+from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import rnn_cell
+from tensorflow.python.ops import tensor_array_ops
+from tensorflow.python.ops import variable_scope as vs
+from tensorflow.python.util import nest
+
+
 def pb_dynamic_rnn(cell_list, inputs, sequence_length=None, initial_state=None,
                 dtype=None, parallel_iterations=None, swap_memory=False,
                 time_major=False, scope=None):
-  
-  if not isinstance(cell, rnn_cell.RNNCell):
-    raise TypeError("cell must be an instance of RNNCell")
+
+  if not cell_list.map(isinstance,tf.rnn_cell.RNNCell).all():
+    raise TypeError("all cells must be an instance of RNNCell")
 
   # By default, time_major==False and inputs are batch-major: shaped
   #   [batch, time, depth]
@@ -39,12 +52,12 @@ def pb_dynamic_rnn(cell_list, inputs, sequence_length=None, initial_state=None,
         raise ValueError("All inputs should have the same batch size")
 
     if initial_state is not None:
-      state = initial_state
+      states = initial_state
     else:
       if not dtype:
         raise ValueError("If no initial_state is provided, dtype must be.")
-      state = cell.zero_state(batch_size, dtype)
-
+      states = cell_list.map(zero_state,(batch_size, dtype))
+    #Potentially need to assert the equivalence of the zero-state for all underlying nodes.
     def _assert_has_shape(x, shape):
       x_shape = array_ops.shape(x)
       packed_shape = array_ops.pack(shape)
@@ -65,7 +78,7 @@ def pb_dynamic_rnn(cell_list, inputs, sequence_length=None, initial_state=None,
     (outputs, final_state) = _pb_dynamic_rnn_loop(
         cell_list,
         inputs,
-        state,
+        states,
         parallel_iterations=parallel_iterations,
         swap_memory=swap_memory,
         sequence_length=sequence_length,
@@ -87,18 +100,18 @@ def pb_dynamic_rnn(cell_list, inputs, sequence_length=None, initial_state=None,
 
 def _pb_dynamic_rnn_loop(cell,
                       inputs,
-                      initial_state,
+                      initial_states,
                       parallel_iterations,
                       swap_memory,
                       sequence_length=None,
                       dtype=None):
-  
-  state = initial_state
-  
+
+  states = initial_states
+
   if not isinstance(parallel_iterations,int):
     raise TypeError("parallel_iterations must be int")
-  
-  state_size = cell.state_size
+
+  state_size = sum(cell_list.map(state_size))/len(cell_list)
 
   flat_input = nest.flatten(inputs)
   flat_output_size = nest.flatten(cell.output_size)
@@ -148,7 +161,7 @@ def _pb_dynamic_rnn_loop(cell,
   with ops.name_scope("dynamic_rnn") as scope:
     base_name = scope
 
- 
+
   def _create_ta(name, dtype):
     return tensor_array_ops.TensorArray(dtype=dtype,
                                         size=time_steps,
