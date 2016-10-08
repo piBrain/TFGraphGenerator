@@ -1,6 +1,7 @@
 setup.cfg
 setup.py
 tfgraphgen/__init__.py
+tfgraphgen/custom_dyn_rnn.py
 tfgraphgen/general_nn.py
 tfgraphgen/rnn.py
 tfgraphgen.egg-info/PKG-INFO

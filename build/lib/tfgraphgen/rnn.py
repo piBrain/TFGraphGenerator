@@ -9,6 +9,11 @@ class RecurrentNetworks(GeneralNetworks):
         super().__init__(graph)
 
 
+    def _wrapper_assertions(self,wrapper,wrapper_args):
+        if wrapper and not wrapper_args:
+            raise ValueError('If using a wrapper, must supply wrapper arguments.')
+        if wrapper_args and not wrapper:
+            raise ValueError('wrapper_args passed in, but wrapper not set to true')
 
 
     @staticmethod
@@ -29,10 +34,7 @@ class RecurrentNetworks(GeneralNetworks):
     @GeneralNetworks._graphcontext
     def _create_layer(self,l_type,cell_args,wrapper=None,wrapper_args=None):
         with tf.name_scope(l_type+"_"+str(self.depth)):
-            if wrapper and not wrapper_args:
-                raise ValueError('If using a wrapper, must supply wrapper arguments.')
-            if wrapper_args and not wrapper:
-                raise ValueError('wrapper_args passed in, but wrapper not set to true')
+            self._wrapper_assertions(wrapper,wrapper_args)
             self.depth += 1
             cell = GeneralNetworks._implemented['RecurrentNetworks'][l_type].__func__(**cell_args)
             self._nn_structure[self.depth] = cell
@@ -40,6 +42,30 @@ class RecurrentNetworks(GeneralNetworks):
                 return RecurrentNetworks._implemented_wrappers[wrapper].__func__(cell,**wrapper_args)
             return cell
 
+    @GeneralNetworks._graphcontext
+    def chain(self,new_l_type,dyn_rnn_kwargs,next_layer_kwargs,state_saving=False,wrapper=None,wrapper_args=None):
+        if state_saving:
+            output = tf.nn.state_saving_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+        else:
+            output = tf.nn.dynamic_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+        self._wrapper_assertions(wrapper,wrapper_args)
+        GeneralNetworks._check_l_type(new_l_type)
+        self.depth += 1
+        self._nn_structure[self.depth]=('OUTPUT_LAYER',)
+        self.create_layer(new_l_type,next_layer_kwargs,wrapper,wrapper_args)
+        return output
+
+
+    @GeneralNetworks._graphcontext
+    def output(self,dyn_rnn_kwargs,state_saving=False,wrapper=None,wrapper_args=None):
+        if state_saving:
+            output = tf.nn.state_saving_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+        else:
+            output = tf.nn.dynamic_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+        self._wrapper_assertions(wrapper,wrapper_args)
+        self.depth += 1
+        self._nn_structure[self.depth]=('OUTPUT_LAYER',)
+        return output
 
     @staticmethod
     def _basic_rnn(num_units,input_size,activation):
@@ -77,7 +103,9 @@ class RecurrentNetworks(GeneralNetworks):
     def _multi_cell(cells, state_is_tuple=False):
         return ('multi_cell',tf.nn.rnn_cell.MultiRNNCell(cells,state_is_tuple))
 
+
     GeneralNetworks._implemented['RecurrentNetworks']['multi_cell'] = _multi_cell
+
 
 
 
