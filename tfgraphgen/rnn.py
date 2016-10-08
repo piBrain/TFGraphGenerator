@@ -55,6 +55,18 @@ class RecurrentNetworks(GeneralNetworks):
         self.create_layer(new_l_type,next_layer_kwargs,wrapper,wrapper_args)
         return output
 
+
+    @GeneralNetworks._graphcontext
+    def output(self,dyn_rnn_kwargs,state_saving=False,wrapper=None,wrapper_args=None):
+        if state_saving:
+            output = tf.nn.state_saving_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+        else:
+            output = tf.nn.dynamic_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+        self._wrapper_assertions(wrapper,wrapper_args)
+        self.depth += 1
+        self._nn_structure[self.depth]=('OUTPUT_LAYER',)
+        return output
+
     @staticmethod
     def _basic_rnn(num_units,input_size,activation):
         return ('basic_rnn_cell',tf.nn.rnn_cell.BasicRNNCell(num_units,input_size,activation))
