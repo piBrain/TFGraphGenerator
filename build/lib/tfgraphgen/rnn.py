@@ -8,7 +8,6 @@ class RecurrentNetworks(GeneralNetworks):
     def __init__(self,graph=tf.Graph()):
         super().__init__(graph)
 
-
     def _wrapper_assertions(self,wrapper,wrapper_args):
         if wrapper and not wrapper_args:
             raise ValueError('If using a wrapper, must supply wrapper arguments.')
@@ -49,7 +48,7 @@ class RecurrentNetworks(GeneralNetworks):
         else:
             output = tf.nn.dynamic_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
         self._wrapper_assertions(wrapper,wrapper_args)
-        GeneralNetworks._check_l_type(new_l_type)
+        self._check_l_type(new_l_type)
         self.depth += 1
         self._nn_structure[self.depth]=('OUTPUT_LAYER',)
         self.create_layer(new_l_type,next_layer_kwargs,wrapper,wrapper_args)
@@ -57,8 +56,15 @@ class RecurrentNetworks(GeneralNetworks):
 
 
     @GeneralNetworks._graphcontext
-    def output(self,dyn_rnn_kwargs,state_saving=False,wrapper=None,wrapper_args=None):
-        if state_saving:
+    def output(self,dyn_rnn_kwargs,state_saving=False,wrapper=None,wrapper_args=None,short_out_cell=None):
+        print(self.depth)
+        if self.depth == 1:
+            if short_out_cell is None:
+                raise(ValueError,'Network Depth is 0 and short_out_cell is None.')
+            self._check_l_type(short_out_cell[0])
+            cell = GeneralNetworks._implemented['RecurrentNetworks'][short_out_cell[0]].__func__(**short_out_cell[1])[1]
+            output = tf.nn.dynamic_rnn(cell,**dyn_rnn_kwargs)
+        elif state_saving:
             output = tf.nn.state_saving_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
         else:
             output = tf.nn.dynamic_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
@@ -74,8 +80,8 @@ class RecurrentNetworks(GeneralNetworks):
     GeneralNetworks._implemented['RecurrentNetworks']['basic_rnn_cell'] = _basic_rnn
 
     @staticmethod
-    def _basic_lstm(num_units, forget_bias, input_size, activation, state_is_tuple = False):
-        return ('basic_lstm_cell',tf.nn.rnn_cell.BasicLSTMCell(num_units, forget_bias, input_size, state_is_tuple,activation))
+    def _basic_lstm(num_units, forget_bias, activation, state_is_tuple = False):
+        return ('basic_lstm_cell',tf.nn.rnn_cell.BasicLSTMCell(num_units, forget_bias, input_size=None, state_is_tuple=state_is_tuple,activation=activation))
 
     GeneralNetworks._implemented['RecurrentNetworks']['basic_lstm_cell'] = _basic_lstm
 

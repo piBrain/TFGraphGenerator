@@ -52,7 +52,6 @@ class GeneralNetworks():
                f(self,*args,**kwargs)
         return wrap
 
-    @staticmethod
     def _check_l_type(self,l_type):
         if l_type not in GeneralNetworks._implemented[self.__class__.__name__].keys():
             raise ValueError("l_type not implemented")
@@ -62,7 +61,7 @@ class GeneralNetworks():
             parameters = yield
             try:
                 l_type,args = parameters
-                GeneralNetworks._check_l_type(l_type)
+                self._check_l_type(l_type)
                 self._create_layer(l_type,*args)
                 yield self._nn_structure[self.depth]
             except TypeError as e:

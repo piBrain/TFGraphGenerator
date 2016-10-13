@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
         name='tfgraphgen',
-        version='0.6.7',
+        version='0.6.12',
         description='Symbolic Graph Generation Tensorflow Helper Library',
         url='http://pibrain.io',author='Ian T Butler',
         license='MIT',
