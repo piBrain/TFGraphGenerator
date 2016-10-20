@@ -63,15 +63,16 @@ class RecurrentNetworks(GeneralNetworks):
                 raise(ValueError,'Network Depth is 0 and short_out_cell is None.')
             self._check_l_type(short_out_cell[0])
             cell = GeneralNetworks._implemented['RecurrentNetworks'][short_out_cell[0]].__func__(**short_out_cell[1])[1]
-            output = tf.nn.dynamic_rnn(cell,**dyn_rnn_kwargs)
+
+            output,state = tf.nn.dynamic_rnn(cell,**dyn_rnn_kwargs)
         elif state_saving:
-            output = tf.nn.state_saving_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+            output,state = tf.nn.state_saving_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
         else:
-            output = tf.nn.dynamic_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
+            output,state = tf.nn.dynamic_rnn(self._nn_structure[self.depth][1],**dyn_rnn_kwargs)
         self._wrapper_assertions(wrapper,wrapper_args)
         self.depth += 1
         self._nn_structure[self.depth]=('OUTPUT_LAYER',)
-        return output
+        return (output,state)
 
     @staticmethod
     def _basic_rnn(num_units,input_size,activation):
